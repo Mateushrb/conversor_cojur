@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Download</title>
+    <style>
+        #loading {
+            font-size: 20px;
+        }
+        #mensagem {
+            display: none;
+            font-size: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Preparando seu download...</div>
+    <div id="mensagem">Seu download iniciou!</div>
+    <a href="/">Converter mais arquivos</a>
+
+    <script>
+        window.onload = function() {
+            const downloadUrl = "{{ url }}";
+
+            // Cria um link invisível para iniciar o download
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = '';
+            document.body.appendChild(link);
+            link.click();
+
+            // Após iniciar o download, atualiza a interface
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("mensagem").style.display = "block";
+        };
+    </script>
+</body>
+</html>

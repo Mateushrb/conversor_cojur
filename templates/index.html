@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Conversor DOC para HTML</title>
+    <style>
+        #loading {
+            display: none;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enviar arquivos .doc ou .docx</h1>
+    <form id="upload-form">
+        <input type="file" name="files" multiple required>
+        <button type="submit">Converter</button>
+    </form>
+
+    <div id="loading">Convertendo arquivos, por favor aguarde...</div>
+
+    <script>
+        const form = document.getElementById("upload-form");
+        const loading = document.getElementById("loading");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            loading.style.display = "block";
+
+            const response = await fetch("/converter/", {
+                method: "POST",
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                window.location.href = `/download_page/${data.zip_file}`;
+            } else {
+                loading.innerText = "Ocorreu um erro ao converter os arquivos.";
+            }
+        });
+    </script>
+</body>
+</html>
