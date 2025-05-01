@@ -2,11 +2,16 @@ from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as StarletteRequest
 from pathlib import Path
+from datetime import datetime
+from http import HTTPStatus
 import os
 import shutil
 import uuid
 import zipfile
+import logging
 from conversor import converter_doc_para_html
 
 app = FastAPI()
@@ -16,9 +21,46 @@ UPLOAD_DIR = Path("uploads")
 CONVERTED_DIR = Path("convertidos")
 ZIP_DIR = Path("zips")
 
+# Configura o logger para salvar no arquivo "access.log"
+logging.basicConfig(
+    filename="access.log",
+    format="%(asctime)s - %(message)s",
+    level=logging.INFO
+)
+
+# Middleware para registrar IP, nome da máquina, método, rota e status
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: StarletteRequest, call_next):
+        client_ip = request.client.host
+        try:
+            hostname = socket.gethostbyaddr(client_ip)[0]
+        except Exception:
+            hostname = "desconhecido"
+
+        method = request.method
+        path = request.url.path
+        start_time = datetime.now()
+
+        response = await call_next(request)
+
+        status_code = response.status_code
+        duration = (datetime.now() - start_time).total_seconds()
+        status_phrase = HTTPStatus(status_code).phrase
+        
+        user_agent = request.headers.get("user-agent", "desconhecido")
+
+        log_msg = (
+            f'{client_ip} ({hostname}) - {method} {path} - {status_code} {status_phrase} - {duration:.2f}s - '
+            f'{duration:.2f}s - UA: {user_agent}'
+        )
+        logging.info(log_msg)
+
+        return response
+
+app.add_middleware(LoggingMiddleware)
+
 for folder in [UPLOAD_DIR, CONVERTED_DIR, ZIP_DIR]:
     folder.mkdir(exist_ok=True)
-
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
