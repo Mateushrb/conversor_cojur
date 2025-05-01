@@ -25,7 +25,7 @@ def converter_doc_para_html(doc_path: Path, output_dir: Path) -> Path:
     texto = bin_data.decode(encoding, errors='replace')
     texto = texto.replace(
         '<meta http-equiv=Content-Type content="text/html; charset=windows-1252">',
-        '<meta charset="UTF-8">'
+        '<meta http-equiv=Content-Type content="text/html; charset="UTF-8">'
     )
 
     with open(html_path, 'w', encoding='utf-8') as f:
