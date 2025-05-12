@@ -6,6 +6,8 @@ uvicorn
 python-multipart  
 pywin32  
 chardet
+jinja2
+bs4
 
 uvicorn main:app --host 0.0.0.0 --port 8000
 
