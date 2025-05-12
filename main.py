@@ -7,6 +7,7 @@ from starlette.requests import Request as StarletteRequest
 from pathlib import Path
 from datetime import datetime
 from http import HTTPStatus
+from fastapi.staticfiles import StaticFiles
 import os
 import shutil
 import uuid
@@ -16,6 +17,7 @@ from conversor import converter_doc_para_html
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+app.mount("/imagens", StaticFiles(directory="templates/imagens"), name="imagens")
 
 UPLOAD_DIR = Path("uploads")
 CONVERTED_DIR = Path("convertidos")
