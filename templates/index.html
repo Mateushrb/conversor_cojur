@@ -224,11 +224,11 @@
         <form id="upload-form">
             <div>
                 <label for="file-input">Selecione os arquivos (.doc ou .docx):</label>
-                <input type="file" id="file-input" name="files" multiple required accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+                <input type="file" id="file-input" name="files" multiple accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
                 <button type="button" id="custom-file-button">Adicionar arquivos</button>
             </div>
             <div id="file-list"></div> <!-- Lista dinâmica aqui -->
-            <button type="submit" id="submit-button">Converter</button>
+            <button type="submit" id="submit-button">Converter documentos</button>
         </form>
 
         <div class="status-messages" aria-live="polite">
@@ -269,51 +269,92 @@
             renderFileList();
             fileInput.value = ""; // limpa o input para permitir mesma seleção novamente
         });
+
+        document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("submit-button").disabled = true;
+});
     
         function renderFileList() {
-            fileList.innerHTML = "";
-    
-            selectedFiles.forEach((file, index) => {
-                const fileItem = document.createElement("div");
-                fileItem.className = "file-item";
-    
-                const fileName = document.createElement("span");
-                fileName.textContent = file.name;
-    
-                const removeBtn = document.createElement("button");
-                removeBtn.textContent = "×";
-                removeBtn.className = "remove-btn";
-                removeBtn.addEventListener("click", () => {
-                    selectedFiles.splice(index, 1);
-                    renderFileList();
-                });
-    
-                fileItem.appendChild(fileName);
-                fileItem.appendChild(removeBtn);
-                fileList.appendChild(fileItem);
-            });
-    
-            // Atualiza o texto do botão com base nos arquivos
-            if (selectedFiles.length > 0) {
-                customFileButton.textContent = "Adicionar mais arquivos";
-            } else {
-                customFileButton.textContent = "Adicionar arquivos";
-            }
-        }
+    fileList.innerHTML = "";
+
+    selectedFiles.forEach((file, index) => {
+        const fileItem = document.createElement("div");
+        fileItem.className = "file-item";
+
+        const fileName = document.createElement("span");
+        fileName.textContent = file.name;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "×";
+        removeBtn.className = "remove-btn";
+        removeBtn.addEventListener("click", () => {
+            selectedFiles.splice(index, 1);
+            renderFileList();
+        });
+
+        fileItem.appendChild(fileName);
+        fileItem.appendChild(removeBtn);
+        fileList.appendChild(fileItem);
+    });
+
+    // Atualiza o texto do botão
+    customFileButton.textContent = selectedFiles.length > 0 ? "Adicionar mais arquivos" : "Adicionar arquivos";
+
+    // Habilita ou desabilita o botão de envio
+    document.getElementById("submit-button").disabled = selectedFiles.length === 0;
+}
     
         // Adicional: ao enviar o formulário, incluir arquivos do array
         const form = document.getElementById("upload-form");
         form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-    
-            const formData = new FormData();
-            selectedFiles.forEach((file) => {
-                formData.append("files", file);
-            });
-    
-            // Faça o envio como desejar
-            // Exemplo: fetch('/converter/', { method: 'POST', body: formData })
+    e.preventDefault();
+
+    // Limpa mensagens antigas
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("error-message").style.display = "none";
+    document.getElementById("error-message").textContent = "";
+    document.getElementById("submit-button").disabled = true;
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => {
+        formData.append("files", file); // "files" deve bater com o que seu backend espera
+    });
+
+    // Exibe mensagem de carregando
+    document.getElementById("loading").style.display = "block";
+
+    try {
+        const response = await fetch("/converter/", {
+            method: "POST",
+            body: formData,
         });
+
+        if (response.ok) {
+            const data = await response.json();
+            window.location.href = `/download_page/${data.zip_file}`;
+        } else {
+            let errorText = "Ocorreu um erro ao converter os arquivos.";
+            try {
+                const errorData = await response.json();
+                if (errorData && errorData.error) {
+                    errorText = errorData.error;
+                }
+            } catch {
+                errorText = `Erro: ${response.status} ${response.statusText}`;
+            }
+            document.getElementById("error-message").textContent = errorText;
+            document.getElementById("error-message").style.display = "block";
+        }
+    } catch {
+        document.getElementById("error-message").textContent = "Erro de conexão ao tentar converter os arquivos.";
+        document.getElementById("error-message").style.display = "block";
+    } finally {
+        if (document.getElementById("error-message").style.display === 'block') {
+            document.getElementById("loading").style.display = "none";
+        }
+        document.getElementById("submit-button").disabled = false;
+    }
+});
     </script>
     
 
