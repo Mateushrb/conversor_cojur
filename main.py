@@ -13,6 +13,8 @@ import shutil
 import uuid
 import zipfile
 import logging
+from db import registrar_conversao
+from db import obter_estatisticas
 from conversor import converter_doc_para_html
 
 app = FastAPI()
@@ -74,7 +76,6 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     session_id = uuid.uuid4().hex
     session_upload = UPLOAD_DIR / session_id
     session_convertido = CONVERTED_DIR / session_id
-    session_zip = ZIP_DIR / f"{session_id}.zip"
 
     session_upload.mkdir()
     session_convertido.mkdir()
@@ -87,6 +88,17 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
         with open(destino, "wb") as f:
             f.write(await file.read())
         paths_doc.append(destino)
+
+    if not paths_doc:
+        return JSONResponse(status_code=400, content={"error": "Nenhum arquivo válido enviado."})
+
+    # 🔢 Registrar conversão no banco
+    qtd_arquivos = len(paths_doc)
+    numero_conversao = registrar_conversao(qtd_arquivos)
+    nome_base = f"conversao_{numero_conversao}_{qtd_arquivos}"
+
+    # 📦 Criar o .zip com nome personalizado
+    session_zip = ZIP_DIR / f"{nome_base}.zip"
 
     html_paths = []
     for path_doc in paths_doc:
@@ -146,3 +158,8 @@ def download_page(request: Request, zip_file_name: str):
     
     download_url = f"/download/{zip_file_name}"
     return templates.TemplateResponse("download.html", {"request": request, "url": download_url})
+
+@app.get("/estatisticas")
+def estatisticas():
+    stats = obter_estatisticas()
+    return JSONResponse(content=stats)
