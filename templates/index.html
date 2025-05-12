@@ -35,22 +35,28 @@
 
         .header-empresa {
             background-color: var(--cor-primaria);
-            padding: 15px 30px;
+            padding: 15px 30px 30px 15px;
             color: var(--cor-texto-sobre-primaria);
             display: flex;
             align-items: center;
+            justify-content: center;
+            position: relative;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .header-empresa img#logo-empresa {
             max-height: 60px; /* Ajuste se necessário para o tamanho do logo.png */
             margin-right: 20px;
+            position: absolute;
+            left: 30px;
+            top: 10px;
         }
 
         .header-empresa .titulo-pagina-header {
             font-size: 1.4em;
             margin: 0;
             font-weight: bold;
+            padding-top: 10px;
         }
 
         .container-principal {
@@ -148,7 +154,6 @@
             background-color: #444;
             color: #f1f1f1;
             text-align: center;
-            padding: 20px;
             font-size: 0.9em;
         }
     </style>
