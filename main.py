@@ -16,6 +16,7 @@ import logging
 from db import registrar_conversao
 from db import obter_estatisticas
 from conversor import converter_doc_para_html
+from tobase64 import embed_images_in_html
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -103,6 +104,8 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     html_paths = []
     for path_doc in paths_doc:
         html_path = converter_doc_para_html(path_doc, session_convertido)
+        # Embutir imagens no HTML
+        embed_images_in_html(html_path, html_path)
         html_paths.append(html_path)
 
     with zipfile.ZipFile(session_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
