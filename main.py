@@ -12,6 +12,7 @@ import os
 import shutil
 import uuid
 import zipfile
+import socket
 import logging
 from db import registrar_conversao
 from db import obter_estatisticas
@@ -38,9 +39,13 @@ class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: StarletteRequest, call_next):
         client_ip = request.client.host
         try:
-            hostname = socket.gethostbyaddr(client_ip)[0]
-        except Exception:
+            # Resolução reversa via DNS
+            hostname, _, _ = socket.gethostbyaddr(client_ip)
+        except socket.herror:
             hostname = "desconhecido"
+        except Exception as e:
+            hostname = "desconhecido"
+            logging.warning(f"Erro ao resolver hostname de {client_ip}: {e}")
 
         method = request.method
         path = request.url.path
