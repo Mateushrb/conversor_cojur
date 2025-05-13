@@ -2,24 +2,170 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Download</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor COJUR</title>
+    <link rel="icon" href="imagens/favicon.png" type="image/x-icon">
     <style>
-        #loading {
+        :root {
+            --cor-primaria: #009639;       /* Verde da bandeira de SC */
+            --cor-secundaria: #009639;     /* Vermelho da bandeira de SC */
+            --cor-branca: #FFFFFF;         /* Branco da bandeira de SC */
+
+            --cor-fundo-pagina: #f0f2f5;   /* Um cinza bem claro para o fundo da página */
+            --cor-fundo-container: var(--cor-branca);
+            --cor-texto-principal: #333333;
+            --cor-texto-sobre-primaria: var(--cor-branca);
+            --cor-texto-sobre-secundaria: var(--cor-branca);
+            --cor-borda: #cccccc;
+            --cor-sucesso: #28a745;
+            --cor-erro: #dc3545;
+            --cor-info: #17a2b8;
+            --fonte-principal: 'Arial', sans-serif;
+        }
+
+        body {
+            font-family: var(--fonte-principal);
+            background-color: var(--cor-fundo-pagina);
+            color: var(--cor-texto-principal);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .header-empresa {
+            background-color: var(--cor-primaria);
+            padding: 15px 30px 30px 15px;
+            color: var(--cor-texto-sobre-primaria);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-empresa img#logo-empresa {
+            max-height: 60px; /* Ajuste se necessário para o tamanho do logo.png */
+            margin-right: 20px;
+            position: absolute;
+            left: 60px;
+            top: 22px;
+        }
+        .header-empresa .titulo-pagina-header {
+            font-size: 1.4em;
+            margin: 0;
+            font-weight: bold;
+            padding-top: 10px;
+        }
+        .container-principal {
+            width: 700px;
+            margin: 30px auto;
+            padding: 25px;
+            background-color: var(--cor-fundo-container);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            flex-grow: 1;
+        }
+        h1.titulo-interno {
+            color: var(--cor-texto-principal);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        .cojur {
+            text-align: center;
+            margin: 0;
+            padding-top: 5px;
             font-size: 20px;
         }
         #mensagem {
-            display: none;
             font-size: 20px;
+            font-weight: 600;
             color: green;
+            text-align: center;
+            padding:  20px 0;
         }
+
+        .converterMais {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #to-home {
+            text-align: center;
+            background-color: var(--cor-secundaria);
+            color: var(--cor-texto-sobre-secundaria);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #to-home:hover {
+            filter: brightness(90%);
+        }
+
+        .footer-empresa {
+            background-color: #444;
+            color: #f1f1f1;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
     </style>
 </head>
 <body>
-    <div id="loading">Preparando seu download...</div>
-    <div id="mensagem">Seu download iniciou!</div>
-    <a href="/">Converter mais arquivos</a>
+    <header class="header-empresa">
+        <img src="/imagens/logo.png" alt="Logo do Estado de Santa Catarina - SECRETARIA DE ESTADO DA ADMINISTRAÇÃO" id="logo-empresa">
+        <div>
+            <h1 class="titulo-pagina-header">SECRETARIA DE ESTADO DA ADMINISTRAÇÃO</h1>
+            <h2 class="cojur">Consultoria Jurídica - COJUR</h2>
+        </div>
+    </header>
 
+    <main class="container-principal">
+        <h1 class="titulo-interno">Arquivos convertidos com sucesso!</h1>
+        <div class="converterMais">
+            <div id="mensagem">Seu download iniciou!</div>
+            <button id="to-home" href="/">Converter mais arquivos</button>
+        </div>
+    </main>
+
+    <footer class="footer-empresa">
+        <p>&copy; <span id="current-year"></span> SECRETARIA DE ESTADO DA ADMINISTRAÇÃO. Todos os direitos reservados.</p>
+        <p>Governo do Estado de Santa Catarina</p>
+    </footer>
+    <script src="/imagens/script.js"></script>
     <script>
+
+        window.addEventListener("load", () => {
+    const duration = 1000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+        confetti({
+            particleCount: 10,
+            angle: 40,
+            spread: 80,
+            origin: { x: 0 }
+        });
+        confetti({
+            particleCount: 10,
+            angle: 140,
+            spread: 80,
+            origin: { x: 1 }
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    })();
+});
+
         window.onload = function() {
             const downloadUrl = "{{ url }}";
 
@@ -34,6 +180,12 @@
             document.getElementById("loading").style.display = "none";
             document.getElementById("mensagem").style.display = "block";
         };
+
+        const toHome = document.getElementById("to-home");
+        toHome.addEventListener("click", () => {
+            window.location.href = "/";
+        })
+
     </script>
 </body>
 </html>
