@@ -120,20 +120,14 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     shutil.rmtree(session_upload, ignore_errors=True)
 
     if len(html_paths) == 1:
-        response = FileResponse(
-            path=html_paths[0],
-            filename=html_paths[0].name,
-            media_type="text/html"
-        )
-
-        # ⚠️ Limpa arquivos **após** o envio
+        # Não apaga o HTML agora, só os arquivos temporários de upload
         def cleanup():
             try:
-                html_paths[0].unlink(missing_ok=True)
-                session_convertido.rmdir()
                 shutil.rmtree(session_upload, ignore_errors=True)
+                # NÃO remover session_convertido ainda
+                # Você pode agendar limpeza posterior se quiser
             except Exception as e:
-                print(f"[ERRO] ao remover arquivos: {e}")
+                print(f"[ERRO] ao limpar após envio único: {e}")
 
         return FileResponse(
             path=html_paths[0],
