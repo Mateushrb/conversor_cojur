@@ -25,7 +25,7 @@ def registrar_conversao(qtd_arquivos: int) -> int:
 def obter_estatisticas():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-
+    cur.execute("CREATE TABLE IF NOT EXISTS conversoes (id INTEGER PRIMARY KEY AUTOINCREMENT, conversao_n INTEGER, qtd_arq_convertidos INTEGER, data TEXT)")
     cur.execute("SELECT COUNT(*), SUM(qtd_arq_convertidos), MAX(data) FROM conversoes")
     total_conversoes, total_arquivos, ultima_data = cur.fetchone()
 
