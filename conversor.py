@@ -1,7 +1,7 @@
 import win32com.client
 import chardet
 from pathlib import Path
-
+import time
 
 def converter_doc_para_html(doc_path: Path, output_dir: Path) -> Path:
     nome_base = doc_path.stem
@@ -14,6 +14,7 @@ def converter_doc_para_html(doc_path: Path, output_dir: Path) -> Path:
         doc = word.Documents.Open(str(doc_path.resolve()))
         doc.SaveAs(str(html_path.resolve()), FileFormat=8)  # wdFormatHTML
         doc.Close()
+        time.sleep(0.5)  # Aguarda para garantir que as imagens sejam gravadas
     finally:
         word.Quit()
 
