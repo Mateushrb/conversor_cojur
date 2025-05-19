@@ -120,12 +120,23 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     shutil.rmtree(session_upload, ignore_errors=True)
 
     if len(html_paths) == 1:
-        # ✅ Apenas um arquivo convertido → retorna o .html direto
-        return FileResponse(
+        response = FileResponse(
             path=html_paths[0],
             filename=html_paths[0].name,
             media_type="text/html"
         )
+
+        # ⚠️ Limpa arquivos **após** o envio
+        def cleanup():
+            try:
+                html_paths[0].unlink(missing_ok=True)
+                session_convertido.rmdir()
+                shutil.rmtree(session_upload, ignore_errors=True)
+            except Exception as e:
+                print(f"[ERRO] ao remover arquivos: {e}")
+
+        return StreamingResponse(response.body_iterator, media_type="text/html", headers=response.headers, background=BackgroundTask(cleanup))
+            
     else:
         # 📦 Mais de um arquivo → compacta em .zip
         session_zip = ZIP_DIR / f"{nome_base}.zip"
