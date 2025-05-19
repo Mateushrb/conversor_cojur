@@ -135,8 +135,13 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
             except Exception as e:
                 print(f"[ERRO] ao remover arquivos: {e}")
 
-        return StreamingResponse(response.body_iterator, media_type="text/html", headers=response.headers, background=BackgroundTask(cleanup))
-            
+        return FileResponse(
+            path=html_paths[0],
+            filename=html_paths[0].name,
+            media_type="text/html",
+            background=BackgroundTask(cleanup)
+        )
+    
     else:
         # 📦 Mais de um arquivo → compacta em .zip
         session_zip = ZIP_DIR / f"{nome_base}.zip"
