@@ -120,18 +120,29 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     shutil.rmtree(session_upload, ignore_errors=True)
 
     if len(html_paths) == 1:
-        # Não apaga o HTML agora, só os arquivos temporários de upload
+        html_file = html_paths[0]
+        
+        # Confirma se o arquivo realmente existe
+        if not html_file.exists():
+            return JSONResponse(status_code=500, content={"error": "Arquivo convertido não foi encontrado no sistema."})
+    
+        # Caminho absoluto seguro
+        absolute_path = html_file.resolve()
+
+        # Nome do arquivo com extensão segura (evita nomes problemáticos)
+        safe_name = "arquivo_convertido.html"
+
+        # Limpeza apenas da pasta de uploads
         def cleanup():
             try:
                 shutil.rmtree(session_upload, ignore_errors=True)
-                # NÃO remover session_convertido ainda
-                # Você pode agendar limpeza posterior se quiser
+                # ⚠️ NÃO apagar session_convertido aqui!
             except Exception as e:
-                print(f"[ERRO] ao limpar após envio único: {e}")
+                print(f"[ERRO] ao limpar uploads: {e}")
 
         return FileResponse(
-            path=html_paths[0],
-            filename=html_paths[0].name,
+            path=absolute_path,
+            filename=safe_name,
             media_type="text/html",
             background=BackgroundTask(cleanup)
         )
