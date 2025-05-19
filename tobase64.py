@@ -29,6 +29,10 @@ def embed_images_in_html(html_path, output_path):
         if mime is None:
             print(f"Formato de imagem não suportado: {ext}")
             continue
+        
+        if not os.path.exists(img_path):
+            print(f"Imagem não encontrada, ignorando: {img_path}")
+            continue
 
         # Converte a imagem para base64
         with open(img_path, 'rb') as image_file:
