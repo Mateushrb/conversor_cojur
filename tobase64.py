@@ -2,6 +2,7 @@ import base64
 import os
 from pathlib import Path
 from bs4 import BeautifulSoup
+from urllib.parse import unquote
 
 def embed_images_in_html(html_path, output_path):
     with open(html_path, 'r', encoding='utf-8') as file:
