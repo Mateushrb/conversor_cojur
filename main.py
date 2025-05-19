@@ -103,42 +103,46 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
     numero_conversao = registrar_conversao(qtd_arquivos)
     nome_base = f"conversao_{numero_conversao}_{qtd_arquivos}"
 
-    # 📦 Criar o .zip com nome personalizado
-    session_zip = ZIP_DIR / f"{nome_base}.zip"
-
     html_paths = []
     for path_doc in paths_doc:
         html_path = converter_doc_para_html(path_doc, session_convertido)
-        
+
         # Embutir imagens no HTML
         embed_images_in_html(html_path, html_path)
-        
+
         # Deletar pasta de imagens externas
         pasta_arquivos = html_path.with_name(html_path.stem + "_arquivos")
         if pasta_arquivos.exists():
             shutil.rmtree(pasta_arquivos, ignore_errors=True)
-            
-        html_paths.append(html_path)
 
-    with zipfile.ZipFile(session_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for html in html_paths:
-            zipf.write(html, arcname=html.name)
-            pasta_arquivos = html.with_name(html.stem + "_arquivos")
-            if pasta_arquivos.exists():
-                for item in pasta_arquivos.rglob("*"):
-                    arcname = Path(html.stem + "_arquivos") / item.relative_to(pasta_arquivos)
-                    zipf.write(item, arcname=arcname)
+        html_paths.append(html_path)
 
     shutil.rmtree(session_upload, ignore_errors=True)
 
-    for html in html_paths:
-        html.unlink(missing_ok=True)
-        pasta_arquivos = html.with_name(html.stem + "_arquivos")
-        if pasta_arquivos.exists():
-            shutil.rmtree(pasta_arquivos, ignore_errors=True)
-    session_convertido.rmdir()
+    if len(html_paths) == 1:
+        # ✅ Apenas um arquivo convertido → retorna o .html direto
+        return FileResponse(
+            path=html_paths[0],
+            filename=html_paths[0].name,
+            media_type="text/html"
+        )
+    else:
+        # 📦 Mais de um arquivo → compacta em .zip
+        session_zip = ZIP_DIR / f"{nome_base}.zip"
+        with zipfile.ZipFile(session_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for html in html_paths:
+                zipf.write(html, arcname=html.name)
 
-    return JSONResponse(content={"zip_file": session_zip.name})
+        # 🧹 Limpeza dos .html e pastas convertidas
+        for html in html_paths:
+            html.unlink(missing_ok=True)
+            pasta_arquivos = html.with_name(html.stem + "_arquivos")
+            if pasta_arquivos.exists():
+                shutil.rmtree(pasta_arquivos, ignore_errors=True)
+
+        session_convertido.rmdir()
+
+        return JSONResponse(content={"zip_file": session_zip.name})
 
 
 @app.get("/download/{zip_file_name}")
