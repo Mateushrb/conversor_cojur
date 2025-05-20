@@ -140,13 +140,12 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
             except Exception as e:
                 print(f"[ERRO] ao limpar uploads: {e}")
         
-        print(f"[DEBUG] Tentando enviar arquivo: {absolute_path}")
-        print(f"[DEBUG] Arquivo existe? {absolute_path.exists()}")
-        print(f"[DEBUG] Tamanho do arquivo: {absolute_path.stat().st_size if absolute_path.exists() else 'N/A'} bytes")
+
         return FileResponse(
             path=absolute_path,
             filename=safe_name,
-            media_type="text/html"
+            media_type="text/html",
+            background=BackgroundTask(cleanup)
         )
     
     else:
