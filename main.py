@@ -189,25 +189,26 @@ async def converter_arquivo(file: UploadFile = File(...)):
 
     return {"arquivo": safe_name}
 
-from fastapi import Body
-
 @app.post("/finalizar_conversao")
 async def finalizar_conversao(payload: dict = Body(...)):
-    nomes = payload.get("arquivos", [])
-    qtd = len(nomes)
+    arquivos = payload.get("arquivos", [])
 
-    if qtd == 0:
+    if not arquivos:
         return JSONResponse(status_code=400, content={"error": "Nenhum arquivo recebido."})
 
-    numero = registrar_conversao(qtd, nomes)
+    qtd = len(arquivos)
+    nomes_originais = [arq["original"] for arq in arquivos]
+    nomes_convertidos = [arq["convertido"] for arq in arquivos]
+
+    numero = registrar_conversao(qtd, nomes_originais)
 
     if qtd == 1:
-        return {"redirect_to": nomes[0]}
+        return {"redirect_to": nomes_convertidos[0]}
 
     nome_zip = f"conversao_{numero}_{qtd}.zip"
     zip_path = ZIP_DIR / nome_zip
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for nome in nomes:
+        for nome in nomes_convertidos:
             caminho = ZIP_DIR / nome
             if caminho.exists():
                 zipf.write(caminho, arcname=nome)
