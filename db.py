@@ -25,14 +25,40 @@ def registrar_conversao(qtd_arquivos: int) -> int:
 def obter_estatisticas():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS conversoes (id INTEGER PRIMARY KEY AUTOINCREMENT, conversao_n INTEGER, qtd_arq_convertidos INTEGER, data TEXT)")
-    cur.execute("SELECT COUNT(*), SUM(qtd_arq_convertidos), MAX(data) FROM conversoes")
-    total_conversoes, total_arquivos, ultima_data = cur.fetchone()
+
+    # Garante a tabela
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS conversoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            conversao_n INTEGER,
+            qtd_arq_convertidos INTEGER,
+            data TEXT
+        )
+    """)
+
+    # Busca os 10 últimos registros
+    cur.execute("""
+        SELECT conversao_n, qtd_arq_convertidos, data
+        FROM conversoes
+        ORDER BY id DESC
+        LIMIT 10
+    """)
+    ultimas = [
+        {"conversao_n": cn, "qtd_arquivos": qtd, "data": dt}
+        for cn, qtd, dt in cur.fetchall()
+    ]
+
+    # Busca totais
+    cur.execute("SELECT COUNT(*) FROM conversoes")
+    total_conversoes = cur.fetchone()[0] or 0
+
+    cur.execute("SELECT SUM(qtd_arq_convertidos) FROM conversoes")
+    total_arquivos = cur.fetchone()[0] or 0
 
     conn.close()
 
     return {
-        "total_conversoes": total_conversoes or 0,
-        "total_arquivos_convertidos": total_arquivos or 0,
-        "ultima_conversao_em": ultima_data or "Nenhuma conversão registrada"
+        "total_conversoes": total_conversoes,
+        "total_arquivos_convertidos": total_arquivos,
+        "ultimas_conversoes": ultimas
     }
