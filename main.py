@@ -185,7 +185,7 @@ async def converter_arquivo(file: UploadFile = File(...)):
     shutil.move(str(html_path), destino_final)
 
     shutil.rmtree(session_upload, ignore_errors=True)
-    session_convertido.rmdir()
+    shutil.rmtree(session_convertido, ignore_errors=True)
 
     return {"arquivo": safe_name}
 
