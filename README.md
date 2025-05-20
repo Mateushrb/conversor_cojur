@@ -11,7 +11,8 @@ bs4
 
 uvicorn main:app --host 0.0.0.0 --port 8000
 
-Pendentes  
-Estilizar com CSS e JavaScript  
-Implementar arquivo de log do servidor  
-Implementar banco de dados sqlite3 para salvar quantidade de arquivos convertidos
+Recursos do conversor  
+Estilizado com CSS e JavaScript  
+Possui arquivo de log do servidor  
+Possui banco de dados sqlite3 para salvar quantidade de arquivos convertidos
+Possui a rota /estatisticas para visualizar a quantidade de arquivos convertidos
