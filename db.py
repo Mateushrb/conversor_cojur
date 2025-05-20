@@ -58,7 +58,12 @@ def obter_estatisticas():
         LIMIT 10
     """)
     ultimas = [
-        {"conversao_n": cn, "qtd_arquivos": qtd, "data": dt}
+        {
+            "conversao_n": cn,
+            "qtd_arquivos": qtd,
+            "data": dt,
+            "nomes_arquivos": json.loads(nomes) if nomes else []
+        }
         for cn, qtd, dt in cur.fetchall()
     ]
 
@@ -72,8 +77,7 @@ def obter_estatisticas():
     conn.close()
 
     return {
-        "conversao_n": cn,
-        "qtd_arquivos": qtd,
-        "data": dt,
-        "nomes_arquivos": json.loads(nomes) if nomes else []
+        "total_conversoes": total_conversoes,
+        "total_arquivos_convertidos": total_arquivos,
+        "ultimas_conversoes": ultimas
     }
