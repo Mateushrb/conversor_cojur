@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Request
+from fastapi import FastAPI, UploadFile, File, Request, Body
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
@@ -163,6 +163,57 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
 
         return JSONResponse(content={"zip_file": session_zip.name})
 
+@app.post("/converter_arquivo/")
+async def converter_arquivo(file: UploadFile = File(...)):
+    session_id = uuid.uuid4().hex
+    session_upload = UPLOAD_DIR / session_id
+    session_convertido = CONVERTED_DIR / session_id
+
+    session_upload.mkdir()
+    session_convertido.mkdir()
+
+    path = session_upload / file.filename
+    with open(path, "wb") as f:
+        f.write(await file.read())
+
+    html_path = converter_doc_para_html(path, session_convertido)
+    embed_images_in_html(html_path, html_path)
+
+    # Move para ZIP_DIR temporariamente
+    safe_name = path.stem + ".html"
+    destino_final = ZIP_DIR / safe_name
+    shutil.move(str(html_path), destino_final)
+
+    shutil.rmtree(session_upload, ignore_errors=True)
+    session_convertido.rmdir()
+
+    return {"arquivo": safe_name}
+
+from fastapi import Body
+
+@app.post("/finalizar_conversao")
+async def finalizar_conversao(payload: dict = Body(...)):
+    nomes = payload.get("arquivos", [])
+    qtd = len(nomes)
+
+    if qtd == 0:
+        return JSONResponse(status_code=400, content={"error": "Nenhum arquivo recebido."})
+
+    numero = registrar_conversao(qtd, nomes)
+
+    if qtd == 1:
+        return {"redirect_to": nomes[0]}
+
+    nome_zip = f"conversao_{numero}_{qtd}.zip"
+    zip_path = ZIP_DIR / nome_zip
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for nome in nomes:
+            caminho = ZIP_DIR / nome
+            if caminho.exists():
+                zipf.write(caminho, arcname=nome)
+                caminho.unlink(missing_ok=True)
+
+    return {"redirect_to": nome_zip}
 
 @app.get("/download/{zip_file_name}")
 def download(zip_file_name: str):
