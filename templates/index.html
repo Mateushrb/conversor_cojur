@@ -369,7 +369,7 @@ form.addEventListener("submit", async (e) => {
             if (response.ok) {
                 const json = await response.json();
                 resultados.push({
-                    converito: json.arquivo,
+                    convertido: json.arquivo,
                     original: file.name
                 });
                 statusEl.innerHTML = `✅ Concluído`;
