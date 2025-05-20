@@ -297,9 +297,10 @@ function renderFileList() {
         const fileName = document.createElement("span");
         fileName.textContent = file.name;
 
+        // Status começa vazio — será adicionado dinamicamente após envio
         const status = document.createElement("span");
         status.className = "file-status";
-        status.textContent = "Pendente";
+        status.textContent = ""; // Só será preenchido no envio
 
         const removeBtn = document.createElement("button");
         removeBtn.textContent = "×";
@@ -328,6 +329,17 @@ document.addEventListener("DOMContentLoaded", () => {
 const form = document.getElementById("upload-form");
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // Antes de iniciar a conversão
+    selectedFiles.forEach((_, i) => {
+    const fileItem = document.querySelector(`.file-item[data-index="${i}"]`);
+    const statusEl = fileItem.querySelector(".file-status");
+    const removeBtn = fileItem.querySelector(".remove-btn");
+
+    // Mostra "Pendente" no lugar do botão de remover
+    statusEl.textContent = "Pendente";
+    removeBtn.style.display = "none";
+});
 
     document.getElementById("loading").style.display = "block";
     document.getElementById("error-message").style.display = "none";
