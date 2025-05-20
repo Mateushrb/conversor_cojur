@@ -100,7 +100,8 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
 
     # 🔢 Registrar conversão no banco
     qtd_arquivos = len(paths_doc)
-    numero_conversao = registrar_conversao(qtd_arquivos)
+    nomes = [p.name for p in paths_doc]
+    numero_conversao = registrar_conversao(qtd_arquivos, nomes)
     nome_base = f"conversao_{numero_conversao}_{qtd_arquivos}"
 
     html_paths = []
