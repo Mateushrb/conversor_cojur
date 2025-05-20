@@ -325,60 +325,42 @@
     document.getElementById("loading").style.display = "block";
 
     try {
-        const response = await fetch("/converter/", {
-    method: "POST",
-    body: formData
-}).then(async response => {
+    const response = await fetch("/converter/", {
+        method: "POST",
+        body: formData
+    });
+
     if (response.ok) {
         const contentType = response.headers.get("content-type");
+
         if (contentType && contentType.includes("application/json")) {
             const json = await response.json();
             if (json.zip_file) {
-                // Redireciona para página de download
                 window.location.href = "/download_page/" + json.zip_file;
             }
         } else if (contentType && contentType.includes("text/html")) {
-            // HTML foi retornado diretamente
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = "arquivo_convertido.html";
+
+            // Usa o nome do arquivo original, se for só 1
+            const originalName = selectedFiles[0]?.name.replace(/\.(docx?|pdf)$/, '.html') || 'arquivo_convertido.html';
+            a.download = originalName;
+
             document.body.appendChild(a);
             a.click();
             a.remove();
         }
     } else {
-        document.getElementById("error-message").textContent = "Erro de conexão ao tentar converter os arquivos.";
+        const errorText = `Erro: ${response.status} ${response.statusText}`;
+        document.getElementById("error-message").textContent = errorText;
         document.getElementById("error-message").style.display = "block";
     }
-});
-
-        if (response.ok) {
-            const data = await response.json();
-            window.location.href = `/download_page/${data.zip_file}`;
-        } else {
-            let errorText = "Ocorreu um erro ao converter os arquivos.";
-            try {
-                const errorData = await response.json();
-                if (errorData && errorData.error) {
-                    errorText = errorData.error;
-                }
-            } catch {
-                errorText = `Erro: ${response.status} ${response.statusText}`;
-            }
-            document.getElementById("error-message").textContent = errorText;
-            document.getElementById("error-message").style.display = "block";
-        }
-    } catch {
-        document.getElementById("error-message").textContent = "Erro de conexão ao tentar converter os arquivos.";
-        document.getElementById("error-message").style.display = "block";
-    } finally {
-        if (document.getElementById("error-message").style.display === 'block') {
-            document.getElementById("loading").style.display = "none";
-        }
-        document.getElementById("submit-button").disabled = false;
-    }
+} catch (err) {
+    document.getElementById("error-message").textContent = "Erro de conexão ao tentar converter os arquivos.";
+    document.getElementById("error-message").style.display = "block";
+}
 
 });
     </script>
