@@ -65,7 +65,7 @@ def obter_estatisticas():
             "data": dt,
             "nomes_arquivos": json.loads(nomes) if nomes else []
         }
-        for cn, qtd, dt in cur.fetchall()
+        for cn, qtd, dt, nomes in cur.fetchall()
     ]
 
     # Busca totais
