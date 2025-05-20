@@ -132,21 +132,16 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
         # Nome do arquivo com extensão segura (evita nomes problemáticos)
         safe_name = "arquivo_convertido.html"
 
-        # Limpeza apenas da pasta de uploads
-        def cleanup():
-            try:
-                shutil.rmtree(session_upload, ignore_errors=True)
-                # ⚠️ NÃO apagar session_convertido aqui!
-            except Exception as e:
-                print(f"[ERRO] ao limpar uploads: {e}")
-        
+        # Mover o arquivo final para a pasta zips (onde estão os .zip), para baixar via /download
+        destino_final = ZIP_DIR / safe_name
+        shutil.move(str(absolute_path), destino_final)
 
-        return FileResponse(
-            path=absolute_path,
-            filename=safe_name,
-            media_type="text/html",
-            background=BackgroundTask(cleanup)
-        )
+        # Limpa somente os temporários
+        def cleanup():
+            shutil.rmtree(session_upload, ignore_errors=True)
+            session_convertido.rmdir()
+
+        return JSONResponse(content={"html_file": safe_name}, background=BackgroundTask(cleanup))
     
     else:
         # 📦 Mais de um arquivo → compacta em .zip

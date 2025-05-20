@@ -337,6 +337,8 @@
             const json = await response.json();
             if (json.zip_file) {
                 window.location.href = "/download_page/" + json.zip_file;
+            } else if (json.html_file) {
+                window.location.href = "/download_page/" + json.html_file;
             }
         } else if (contentType && contentType.includes("text/html")) {
             const blob = await response.blob();
