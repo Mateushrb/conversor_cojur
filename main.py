@@ -129,8 +129,9 @@ async def converter_arquivos(files: list[UploadFile] = File(...)):
         # Caminho absoluto seguro
         absolute_path = html_file.resolve()
 
-        # Nome do arquivo com extensão segura (evita nomes problemáticos)
-        safe_name = "arquivo_convertido.html"
+        # Usa o nome original do arquivo enviado como base
+        nome_original_sem_ext = paths_doc[0].stem
+        safe_name = f"{nome_original_sem_ext}.html"
 
         # Mover o arquivo final para a pasta zips (onde estão os .zip), para baixar via /download
         destino_final = ZIP_DIR / safe_name
