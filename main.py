@@ -37,6 +37,12 @@ logging.basicConfig(
 # Middleware para registrar IP, nome da máquina, método, rota e status
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: StarletteRequest, call_next):
+        path = request.url.path
+
+        # Se for wpad.dat, não loga
+        if path == "/wpad.dat":
+            return await call_next(request)
+        
         client_ip = request.client.host
         try:
             # Resolução reversa via DNS
